@@ -1,95 +1,95 @@
-# Mac Speech-to-Markdown Live2D App Design
+# macOS 语音转 Markdown Live2D App 设计规格
 
-Date: 2026-07-02
+日期：2026-07-02
 
-## Goal
+## 目标
 
-Build a macOS menu bar app that turns speech into text locally, appends every result to daily Markdown files, and can insert recognized text directly into the active input field. The app uses the character "Xiaomeng" as a Live2D assistant so the recording and transcription flow feels warm, visible, and less mechanical.
+构建一个 macOS 菜单栏 App：在本地将语音转换成文字，把每次识别结果追加到每日 Markdown 文档中，并支持将文字直接插入到当前光标所在的输入位置。App 使用“小梦”作为 Live2D 助手，让录音、识别和插入过程更直观、更贴心，也避免工具在运行时显得单调。
 
-## Target Users
+## 目标用户
 
-The first users are teammates who frequently write messages, notes, requirements, comments, and short documents on a Mac. They need fast speech input without sending audio to a cloud service. The app should feel useful during real work, not like a demo that requires constant attention.
+第一批用户是经常在 Mac 上写消息、笔记、需求、注释和短文档的同事。他们需要快速语音输入，同时不希望音频被发送到云端服务。App 应该能融入真实工作流，而不是需要用户频繁关注和操作的演示工具。
 
-## First-Version Scope
+## 第一版范围
 
-Included:
+包含：
 
-- macOS menu bar app.
-- Local offline speech recognition.
-- Chinese and English mixed dictation.
-- Toggle recording hotkey: press once to start, press again to stop.
-- Push-to-talk hotkey: hold to record, release to transcribe.
-- Automatic daily Markdown log files.
-- Optional automatic paste into the current cursor location.
-- Menu bar controls for status, settings, today log, and model state.
-- Live2D Xiaomeng floating assistant with state-based animations.
+- macOS 菜单栏 App。
+- 本地离线语音识别。
+- 中文和英文混合听写。
+- 切换式录音快捷键：按一次开始，再按一次停止。
+- 按住说话快捷键：按住录音，松开后开始识别。
+- 自动生成每日 Markdown 记录文件。
+- 可选的自动粘贴到当前光标位置。
+- 菜单栏中提供状态、设置、今日日志和模型状态入口。
+- 小梦 Live2D 悬浮助手，随 App 状态切换动作。
 
-Excluded from the first version:
+第一版不包含：
 
-- Cloud speech recognition.
-- Team sync or shared notes.
-- Full meeting transcription workflow.
-- Multi-character assistant system.
-- Complex desktop pet behavior unrelated to speech input.
-- Mobile or Windows support.
+- 云端语音识别。
+- 团队同步或共享笔记。
+- 完整会议转写工作流。
+- 多角色助手系统。
+- 与语音输入无关的复杂桌面宠物行为。
+- 移动端或 Windows 支持。
 
-## Product Experience
+## 产品体验
 
-The app runs quietly from the macOS menu bar. Users trigger dictation with global hotkeys instead of opening a full window.
+App 常驻在 macOS 菜单栏中。用户主要通过全局快捷键触发听写，不需要打开完整窗口。
 
-For toggle recording, the first hotkey press starts recording and changes the assistant into a listening state. The second press stops recording, runs local transcription, writes the result into today's Markdown file, then optionally pastes the recognized text into the currently focused app.
+切换式录音流程：第一次按快捷键开始录音，小梦进入聆听状态；第二次按快捷键停止录音，App 执行本地识别，将结果写入当天 Markdown 文件，并在用户开启设置时把文字粘贴到当前聚焦的 App 中。
 
-For push-to-talk, holding the configured hotkey records audio and releasing it starts transcription. This is optimized for short commands, chat replies, and quick note snippets.
+按住说话流程：用户按住配置好的快捷键时开始录音，松开后立即进入识别。这个模式适合短句、聊天回复和快速笔记片段。
 
-The floating Xiaomeng window can be shown, hidden, or pinned to a screen corner. It stays small enough to avoid covering work content. It reacts to app state, but text instructions and errors remain in native UI so accessibility and clarity do not depend on the character art.
+小梦悬浮窗可以显示、隐藏或固定在屏幕角落。默认尺寸应足够小，避免遮挡工作内容。小梦会响应 App 状态，但文字提示和错误说明仍由原生 UI 承担，确保可访问性和信息清晰度不依赖角色图片。
 
-## Recommended Technical Direction
+## 推荐技术方向
 
-Use Swift as the native macOS host app and use whisper.cpp for offline transcription.
+使用 Swift 构建原生 macOS 宿主 App，使用 whisper.cpp 进行本地离线语音识别。
 
-Use WKWebView for the first Live2D integration. Swift owns system-level responsibilities: microphone capture, permissions, global hotkeys, transcription process orchestration, Markdown writes, clipboard insertion, settings, and menu bar UI. The WebView owns Live2D rendering and receives state events from Swift.
+第一版 Live2D 集成建议使用 WKWebView。Swift 负责系统能力：麦克风采集、权限处理、全局快捷键、识别流程调度、Markdown 写入、剪贴板插入、设置和菜单栏 UI。WebView 负责 Live2D 渲染，并接收 Swift 发来的状态事件。
 
-This keeps the core voice workflow native and reliable while isolating the character layer. If the Live2D layer has a rendering issue, the speech-to-text workflow can still function.
+这种拆分能让核心语音流程保持原生和可靠，同时把角色层隔离出来。即使 Live2D 渲染层出现问题，语音识别和 Markdown 记录也应继续可用。
 
-## Architecture
+## 架构
 
-### Native App Layer
+### 原生 App 层
 
-Responsibilities:
+职责：
 
-- Menu bar lifecycle.
-- App settings and first-run onboarding.
-- Microphone permission request and error handling.
-- Audio recording.
-- Global hotkey registration.
-- Audio preprocessing into the format required by whisper.cpp.
-- Local transcription job management.
-- Markdown persistence.
-- Clipboard and paste automation.
-- Live2D state event dispatch.
+- 菜单栏生命周期。
+- App 设置和首次启动引导。
+- 麦克风权限请求和错误处理。
+- 音频录制。
+- 全局快捷键注册。
+- 将音频预处理成 whisper.cpp 所需格式。
+- 本地识别任务管理。
+- Markdown 持久化。
+- 剪贴板和粘贴自动化。
+- Live2D 状态事件分发。
 
-Candidate modules:
+候选模块：
 
-- `AppShell`: menu bar app lifecycle and top-level dependency wiring.
-- `HotkeyManager`: global hotkey registration and conflict handling.
-- `AudioRecorder`: microphone capture and temporary audio file creation.
-- `TranscriptionService`: whisper.cpp model loading and transcription execution.
-- `MarkdownLogStore`: daily Markdown file creation and append operations.
-- `TextInsertionService`: clipboard update and paste command dispatch.
-- `AssistantStateController`: maps app events to Live2D states.
-- `SettingsStore`: model path, log directory, hotkeys, paste behavior, assistant visibility.
+- `AppShell`：菜单栏 App 生命周期和顶层依赖装配。
+- `HotkeyManager`：全局快捷键注册和冲突处理。
+- `AudioRecorder`：麦克风采集和临时音频文件创建。
+- `TranscriptionService`：whisper.cpp 模型加载和识别执行。
+- `MarkdownLogStore`：每日 Markdown 文件创建和追加写入。
+- `TextInsertionService`：剪贴板更新和粘贴命令触发。
+- `AssistantStateController`：将 App 事件映射为 Live2D 状态。
+- `SettingsStore`：模型路径、日志目录、快捷键、粘贴行为和助手可见性设置。
 
-### Live2D Assistant Layer
+### Live2D 助手层
 
-Responsibilities:
+职责：
 
-- Load Xiaomeng Live2D model assets.
-- Play idle loop and state animations.
-- React to high-level state changes from Swift.
-- Track pointer position inside the floating assistant window.
-- Provide click callbacks for simple commands such as opening the menu or toggling visibility.
+- 加载小梦 Live2D 模型资源。
+- 播放待机循环和状态动作。
+- 响应 Swift 发送的高层状态变化。
+- 跟踪悬浮窗内的指针位置。
+- 提供点击回调，用于打开菜单或切换显示状态等简单操作。
 
-The first version should use a small explicit message protocol from Swift to WebView:
+第一版使用一个小而明确的 Swift 到 WebView 消息协议：
 
 ```json
 {
@@ -101,158 +101,159 @@ The first version should use a small explicit message protocol from Swift to Web
 }
 ```
 
-## Live2D State Machine
+## Live2D 状态机
 
-Required first-version states:
+第一版必需状态：
 
-- `loadingModel`: Xiaomeng waits while the transcription model loads.
-- `idle`: calm breathing, blinking, subtle hair and sleeve movement.
-- `listening`: attentive listening pose for toggle recording.
-- `pushToTalk`: more focused listening pose while the hotkey is held.
-- `transcribing`: writing, thinking, or organizing notes.
-- `success`: nodding or handing over a small note after text is inserted or saved.
-- `error`: confused expression for recognition or save failures.
-- `permission`: holding a small prompt card for microphone or accessibility permission.
+- `loadingModel`：识别模型加载时，小梦进入等待状态。
+- `idle`：平静待机，包含呼吸、眨眼、发丝和衣袖轻微摆动。
+- `listening`：切换式录音时的认真聆听姿态。
+- `pushToTalk`：按住说话时更专注的聆听姿态。
+- `transcribing`：书写、思考或整理笔记动作。
+- `success`：识别和保存成功后点头，或递出小纸条。
+- `error`：识别、保存或其他流程失败时的困惑表情。
+- `permission`：缺少麦克风或辅助功能权限时举起提示牌。
 
-State transition rules:
+状态转换规则：
 
-- App launch goes to `loadingModel`, then `idle`.
-- Recording start goes to `listening` or `pushToTalk`.
-- Recording stop goes to `transcribing`.
-- Successful transcription goes to `success`, then returns to `idle`.
-- Empty transcription goes to `error`, then returns to `idle`.
-- Missing microphone or accessibility permission goes to `permission` until resolved.
-- Model loading failure goes to `error` and exposes the native settings action.
+- App 启动后进入 `loadingModel`，加载完成后进入 `idle`。
+- 开始录音后进入 `listening` 或 `pushToTalk`。
+- 停止录音后进入 `transcribing`。
+- 识别成功后进入 `success`，随后回到 `idle`。
+- 识别为空时进入 `error`，随后回到 `idle`。
+- 缺少麦克风或辅助功能权限时进入 `permission`，直到权限问题解决。
+- 模型加载失败时进入 `error`，并通过原生 UI 暴露设置入口。
 
-Volume feedback:
+音量反馈：
 
-- During recording, Swift sends normalized volume updates.
-- Live2D uses volume only for subtle feedback, such as expression intensity or a small sound-wave accessory.
-- Volume feedback must not cause large movement or distract from typing.
+- 录音期间，Swift 发送归一化后的音量值。
+- Live2D 只使用音量做轻量反馈，例如表情强度变化或小型声波装饰。
+- 音量反馈不能造成大幅动作，也不能干扰用户输入。
 
-## Character Asset Direction
+## 角色资产方向
 
-Use the provided Xiaomeng three-view image as the character reference. Preserve these core identity markers:
+使用用户提供的小梦三视图作为角色参考。必须保留以下核心识别特征：
 
-- Long pale yellow to cyan-green gradient hair.
-- Side ponytail silhouette.
-- Red and white Chinese-inspired outfit.
-- Black boots.
-- Warm, friendly anime expression.
-- Sleeve and hem details inspired by the reference image.
+- 浅黄色到青绿色渐变长发。
+- 侧马尾轮廓。
+- 红白配色的中式风格服装。
+- 黑色靴子。
+- 温暖、友好的 anime 表情。
+- 参考图中的袖口和下摆细节。
 
-First-version asset deliverables:
+第一版资产交付物：
 
-- One Live2D model based on the reference.
-- Motion files for each required state.
-- Expression variants for neutral, focused, happy, confused, and waiting.
-- Small simplified app icon derived from the face or hair silhouette.
-- Optional static fallback PNGs for cases where Live2D rendering is disabled.
+- 一个基于参考图制作的小梦 Live2D 模型。
+- 每个必需状态对应的动作文件。
+- 中性、专注、开心、困惑、等待等表情变体。
+- 一个由面部或发型轮廓简化而来的 App 图标。
+- Live2D 渲染不可用时使用的静态 PNG 兜底图。
 
-The Live2D model should be friendly and work-focused rather than overly playful. It should support the voice workflow without making the app feel noisy in an office setting.
+Live2D 模型应体现友好、工作陪伴感，而不是过度娱乐化。它需要服务语音输入流程，不能让 App 在办公场景中显得吵闹。
 
-## Markdown Log Behavior
+## Markdown 记录行为
 
-Default storage uses daily Markdown files in a user-configurable directory.
+默认使用用户可配置目录中的每日 Markdown 文件存储记录。
 
-Suggested default path:
+建议默认路径：
 
 ```text
 ~/Documents/SpeechNotes/YYYY-MM-DD.md
 ```
 
-Append format:
+追加格式：
 
 ```markdown
 ## HH:mm
 
-Recognized text...
+识别出的文本……
 ```
 
-If the user records multiple snippets in quick succession, each snippet still gets a timestamp. The app should never overwrite existing notes. File write failures are surfaced through native UI and the assistant enters `error`.
+如果用户在短时间内连续录制多段内容，每段仍然带独立时间戳。App 绝不能覆盖已有笔记。文件写入失败时，通过原生 UI 提示，小梦进入 `error` 状态。
 
-## Text Insertion Behavior
+## 文本插入行为
 
-The app supports optional automatic insertion into the active app after transcription succeeds.
+App 支持在识别成功后，将文本自动插入当前活跃 App。
 
-Default behavior:
+默认行为：
 
-- Append to Markdown always.
-- Paste into active app when the setting is enabled.
-- Preserve the previous clipboard value when possible.
+- 始终追加到 Markdown。
+- 用户开启设置后，才粘贴到当前活跃 App。
+- 在可行时保留并恢复用户原有剪贴板内容。
 
-Text insertion depends on macOS accessibility permission. If permission is missing, transcription and Markdown logging still work, but paste automation is disabled and the assistant enters `permission`.
+文本插入依赖 macOS 辅助功能权限。如果缺少权限，语音识别和 Markdown 记录仍然可用，但自动粘贴禁用，小梦进入 `permission` 状态。
 
-## Settings
+## 设置项
 
-First-version settings:
+第一版设置项：
 
-- Toggle recording hotkey.
-- Push-to-talk hotkey.
-- Enable or disable automatic paste.
-- Markdown log directory.
-- Whisper model path or model management status.
-- Assistant window visibility.
-- Assistant window size.
-- Launch at login.
+- 切换式录音快捷键。
+- 按住说话快捷键。
+- 开启或关闭自动粘贴。
+- Markdown 记录目录。
+- Whisper 模型路径或模型管理状态。
+- 助手悬浮窗可见性。
+- 助手悬浮窗尺寸。
+- 登录时启动。
 
-Settings should be reachable from the menu bar and from the assistant click menu.
+设置入口应同时能从菜单栏和小梦点击菜单进入。
 
-## Error Handling
+## 错误处理
 
-Required error cases:
+必须处理的错误场景：
 
-- Microphone permission missing.
-- Accessibility permission missing.
-- Hotkey conflict.
-- Transcription model missing.
-- Model load failure.
-- Recording failure.
-- Empty or low-confidence transcription.
-- Markdown write failure.
-- Paste automation failure.
-- Live2D asset load failure.
+- 缺少麦克风权限。
+- 缺少辅助功能权限。
+- 快捷键冲突。
+- 缺少识别模型。
+- 模型加载失败。
+- 录音失败。
+- 识别为空或置信度过低。
+- Markdown 写入失败。
+- 粘贴自动化失败。
+- Live2D 资源加载失败。
 
-All critical errors must have native text feedback. The Live2D assistant provides emotional state feedback, but it is not the only place where errors are explained.
+所有关键错误都必须有原生文字反馈。Live2D 助手提供情绪和状态反馈，但不能成为唯一的错误说明渠道。
 
-## Testing And Verification
+## 测试与验证
 
-Core verification:
+核心验证：
 
-- App launches as a menu bar app.
-- Toggle recording starts and stops reliably.
-- Push-to-talk starts on key down and stops on key up.
-- Audio is transcribed locally without network access.
-- Chinese and English mixed input is recognized.
-- Text is appended to the correct daily Markdown file.
-- Auto paste inserts text into common targets such as Notes, browser text areas, chat apps, and code editors.
-- Existing clipboard content is restored when configured behavior requires it.
-- Missing microphone permission blocks recording with clear guidance.
-- Missing accessibility permission blocks paste only, not transcription or Markdown logging.
-- Live2D state changes match app states.
-- Live2D layer failure does not block speech recognition or Markdown logging.
+- App 能作为菜单栏 App 启动。
+- 切换式录音能可靠开始和停止。
+- 按住说话能在按下时开始录音、松开时停止录音。
+- 语音能在无网络环境下完成本地识别。
+- 能识别中文和英文混合输入。
+- 文本能追加到正确的每日 Markdown 文件。
+- 自动粘贴能在常见目标中插入文本，例如备忘录、浏览器文本框、聊天 App 和代码编辑器。
+- 在设置要求恢复剪贴板时，原剪贴板内容能被恢复。
+- 缺少麦克风权限时，录音被阻止并给出清晰引导。
+- 缺少辅助功能权限时，只阻止自动粘贴，不影响识别和 Markdown 记录。
+- Live2D 状态变化与 App 状态一致。
+- Live2D 层失败时，不影响语音识别和 Markdown 记录。
 
-Visual verification:
+视觉验证：
 
-- Assistant window does not cover the menu bar or active input area by default.
-- Idle animation is subtle enough for office use.
-- Recording and transcribing states are clearly distinguishable.
-- Error and permission states are visible without feeling alarming.
-- The character remains recognizable from the provided reference.
+- 助手悬浮窗默认不遮挡菜单栏或活跃输入区域。
+- 待机动画足够克制，适合办公环境。
+- 录音和识别状态在视觉上容易区分。
+- 错误和权限状态清晰可见，但不制造紧张感。
+- 角色仍然能从用户提供的参考图中被识别为小梦。
 
-## First-Version Defaults
+## 第一版默认决策
 
-Use these defaults unless the user changes them during implementation planning:
+除非用户在实现计划阶段调整，否则使用以下默认决策：
 
-- Use a whisper.cpp model that balances Chinese-English quality and local speed on modern Apple Silicon. Start with a small or medium multilingual model during implementation benchmarking, then choose the smallest model that passes the mixed-language acceptance test.
-- Do not bundle a large model directly into the app binary. Provide a first-run model setup flow and allow the user to choose a local model path.
-- Default toggle hotkey: configurable during first-run setup, with a suggested value that avoids common macOS system shortcuts.
-- Default push-to-talk hotkey: configurable during first-run setup, with a separate suggested value from the toggle hotkey.
-- Automatic Markdown logging is enabled by default.
-- Automatic paste is opt-in during first-run setup because it requires accessibility permission and affects the active app.
-- Xiaomeng assistant is visible by default after first-run setup, with an easy menu bar toggle to hide it.
-- The first Live2D model is a required first-version asset. Static PNG fallback is only for failure handling, not the primary experience.
+- 使用能在现代 Apple Silicon 上平衡中英混合质量和本地速度的 whisper.cpp 模型。实现阶段先用 small 或 medium 多语言模型做基准测试，再选择能通过中英混合验收测试的最小模型。
+- 不把大型模型直接打进 App 二进制包。提供首次启动模型设置流程，并允许用户选择本地模型路径。
+- 切换式录音快捷键在首次启动时配置，默认建议值需要避开常见 macOS 系统快捷键。
+- 按住说话快捷键在首次启动时配置，默认建议值需要与切换式快捷键不同。
+- Markdown 自动记录默认开启。
+- 自动粘贴在首次启动时由用户主动开启，因为它需要辅助功能权限，并会影响当前活跃 App。
+- 小梦助手在首次启动设置完成后默认可见，并在菜单栏提供一键隐藏入口。
+- 第一版必须包含小梦 Live2D 模型。静态 PNG 只作为失败兜底，不作为主体验。
 
-## Acceptance Criteria
+## 验收标准
 
-The first version is successful when a teammate can install the app, grant permissions, press a hotkey, speak a Chinese-English mixed sentence, see Xiaomeng react, find the sentence in today's Markdown file, and optionally have the same sentence inserted into the currently focused app.
+第一版成功标准：同事安装 App 并完成权限授权后，可以按下快捷键，说出一句中英混合内容，看到小梦做出对应反馈，在当天 Markdown 文件中找到识别文本，并在开启自动粘贴时把同一段文本插入当前聚焦的输入位置。
+
