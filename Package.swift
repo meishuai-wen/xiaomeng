@@ -9,6 +9,7 @@ let package = Package(
     products: [
         .library(name: "XiaomengCore", targets: ["XiaomengCore"]),
         .library(name: "XiaomengAudio", targets: ["XiaomengAudio"]),
+        .library(name: "XiaomengAppCore", targets: ["XiaomengAppCore"]),
         .executable(name: "XiaomengApp", targets: ["XiaomengApp"])
     ],
     dependencies: [],
@@ -18,9 +19,13 @@ let package = Package(
             name: "XiaomengAudio",
             dependencies: ["XiaomengCore"]
         ),
+        .target(
+            name: "XiaomengAppCore",
+            dependencies: ["XiaomengCore", "XiaomengAudio"]
+        ),
         .executableTarget(
             name: "XiaomengApp",
-            dependencies: ["XiaomengCore"]
+            dependencies: ["XiaomengAppCore", "XiaomengAudio", "XiaomengCore"]
         ),
         .testTarget(
             name: "XiaomengCoreTests",
@@ -29,6 +34,10 @@ let package = Package(
         .testTarget(
             name: "XiaomengAudioTests",
             dependencies: ["XiaomengAudio"]
+        ),
+        .testTarget(
+            name: "XiaomengAppCoreTests",
+            dependencies: ["XiaomengAppCore", "XiaomengAudio", "XiaomengCore"]
         )
     ]
 )

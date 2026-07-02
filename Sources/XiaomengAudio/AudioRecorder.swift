@@ -8,7 +8,7 @@ public enum AudioRecorderError: Error, Equatable, Sendable {
 }
 
 @MainActor
-public final class AudioRecorder: NSObject, AVAudioRecorderDelegate {
+public final class AudioRecorder: NSObject, AVAudioRecorderDelegate, AudioRecording {
     private let configuration: AudioRecordingConfiguration
     private let fileManager: FileManager
     private var recorder: AVAudioRecorder?
@@ -24,6 +24,10 @@ public final class AudioRecorder: NSObject, AVAudioRecorderDelegate {
 
     public var isRecording: Bool {
         recorder?.isRecording == true
+    }
+
+    public func start(mode: RecordingMode) throws -> URL {
+        try start()
     }
 
     public func start(id: UUID = UUID()) throws -> URL {
