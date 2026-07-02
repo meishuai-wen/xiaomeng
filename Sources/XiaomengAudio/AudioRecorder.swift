@@ -7,6 +7,7 @@ public enum AudioRecorderError: Error, Equatable, Sendable {
     case failedToStart
 }
 
+@MainActor
 public final class AudioRecorder: NSObject, AVAudioRecorderDelegate {
     private let configuration: AudioRecordingConfiguration
     private let fileManager: FileManager
