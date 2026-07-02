@@ -3,6 +3,7 @@ import XCTest
 @testable import XiaomengAppCore
 @testable import XiaomengAudio
 @testable import XiaomengCore
+@testable import XiaomengTranscription
 
 @MainActor
 final class AppControllerTests: XCTestCase {
@@ -74,6 +75,27 @@ final class AppControllerTests: XCTestCase {
         XCTAssertEqual(controller.assistantState, .error)
     }
 
+    func testTranscribesLatestRecordingAndWritesMarkdown() throws {
+        let directory = try makeTemporaryDirectory()
+        let recorder = FakeAudioRecorder()
+        let transcriber = FakeTranscriber(text: "转写文本")
+        let controller = AppController(
+            audioRecorder: recorder,
+            transcriber: transcriber,
+            markdownLogStore: MarkdownLogStore(directory: directory)
+        )
+
+        try controller.toggleRecording()
+        try controller.toggleRecording()
+        try controller.transcribeLatestRecording()
+
+        XCTAssertEqual(transcriber.lastAudioURL?.lastPathComponent, "fake.wav")
+        let markdownURL = try XCTUnwrap(controller.lastMarkdownURL)
+        let content = try String(contentsOf: markdownURL, encoding: .utf8)
+        XCTAssertTrue(content.contains("转写文本"))
+        XCTAssertEqual(controller.assistantState, .success)
+    }
+
     private func makeTemporaryDirectory() throws -> URL {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("xiaomeng-app-controller-tests-\(UUID().uuidString)", isDirectory: true)
@@ -110,5 +132,19 @@ private final class FakeAudioRecorder: AudioRecording {
         stopCount += 1
         isRecording = false
         return URL(fileURLWithPath: "/tmp/fake.wav")
+    }
+}
+
+private final class FakeTranscriber: Transcribing {
+    private let text: String
+    private(set) var lastAudioURL: URL?
+
+    init(text: String) {
+        self.text = text
+    }
+
+    func transcribe(audioURL: URL) throws -> String {
+        lastAudioURL = audioURL
+        return text
     }
 }

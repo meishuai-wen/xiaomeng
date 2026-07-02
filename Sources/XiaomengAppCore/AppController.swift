@@ -1,12 +1,14 @@
 import Foundation
 import XiaomengAudio
 import XiaomengCore
+import XiaomengTranscription
 
 @MainActor
 public final class AppController {
     private let audioRecorder: AudioRecording
     private let recordingSessionController: RecordingSessionController
     private let assistantStateController: AssistantStateController
+    private let transcriber: Transcribing?
     private let markdownLogStore: MarkdownLogStore
 
     public private(set) var lastRecordingURL: URL?
@@ -14,11 +16,13 @@ public final class AppController {
 
     public init(
         audioRecorder: AudioRecording,
+        transcriber: Transcribing? = nil,
         recordingSessionController: RecordingSessionController = RecordingSessionController(),
         assistantStateController: AssistantStateController = AssistantStateController(initialState: .idle),
         markdownLogStore: MarkdownLogStore = MarkdownLogStore(directory: AppController.defaultMarkdownDirectory)
     ) {
         self.audioRecorder = audioRecorder
+        self.transcriber = transcriber
         self.recordingSessionController = recordingSessionController
         self.assistantStateController = assistantStateController
         self.markdownLogStore = markdownLogStore
@@ -61,6 +65,16 @@ public final class AppController {
 
         lastMarkdownURL = try markdownLogStore.append(trimmedText, at: date)
         completeTranscriptionState(success: true)
+    }
+
+    public func transcribeLatestRecording(at date: Date = Date()) throws {
+        guard let lastRecordingURL, let transcriber else {
+            completeTranscriptionState(success: false)
+            return
+        }
+
+        let text = try transcriber.transcribe(audioURL: lastRecordingURL)
+        try completeTranscription(text: text, at: date)
     }
 
     private func perform(_ output: RecordingSessionOutput) throws {

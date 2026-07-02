@@ -2,11 +2,15 @@ import AppKit
 import XiaomengAppCore
 import XiaomengAudio
 import XiaomengCore
+import XiaomengTranscription
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
-    private let appController = AppController(audioRecorder: AudioRecorder())
+    private let appController = AppController(
+        audioRecorder: AudioRecorder(),
+        transcriber: AppDelegate.makeTranscriberFromEnvironment()
+    )
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         configureMenuBar()
@@ -41,6 +45,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func toggleRecording() {
         do {
             try appController.toggleRecording()
+            if appController.recordingState == .transcribing {
+                try appController.transcribeLatestRecording()
+            }
         } catch {
             NSSound.beep()
         }
@@ -55,6 +62,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         NSWorkspace.shared.open(url)
+    }
+
+    private static func makeTranscriberFromEnvironment() -> Transcribing? {
+        let environment = ProcessInfo.processInfo.environment
+        guard
+            let executablePath = environment["XIAOMENG_WHISPER_CLI"],
+            let modelPath = environment["XIAOMENG_WHISPER_MODEL"]
+        else {
+            return nil
+        }
+
+        return WhisperCLITranscriber(
+            configuration: WhisperCLIConfiguration(
+                executableURL: URL(fileURLWithPath: executablePath),
+                modelURL: URL(fileURLWithPath: modelPath)
+            )
+        )
     }
 }
 
