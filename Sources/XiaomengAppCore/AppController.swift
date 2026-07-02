@@ -7,17 +7,21 @@ public final class AppController {
     private let audioRecorder: AudioRecording
     private let recordingSessionController: RecordingSessionController
     private let assistantStateController: AssistantStateController
+    private let markdownLogStore: MarkdownLogStore
 
     public private(set) var lastRecordingURL: URL?
+    public private(set) var lastMarkdownURL: URL?
 
     public init(
         audioRecorder: AudioRecording,
         recordingSessionController: RecordingSessionController = RecordingSessionController(),
-        assistantStateController: AssistantStateController = AssistantStateController(initialState: .idle)
+        assistantStateController: AssistantStateController = AssistantStateController(initialState: .idle),
+        markdownLogStore: MarkdownLogStore = MarkdownLogStore(directory: AppController.defaultMarkdownDirectory)
     ) {
         self.audioRecorder = audioRecorder
         self.recordingSessionController = recordingSessionController
         self.assistantStateController = assistantStateController
+        self.markdownLogStore = markdownLogStore
     }
 
     public var recordingState: RecordingSessionState {
@@ -48,6 +52,17 @@ public final class AppController {
         applyAssistantEvent(output.assistantEvent)
     }
 
+    public func completeTranscription(text: String, at date: Date = Date()) throws {
+        let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedText.isEmpty else {
+            finishTranscription(success: false)
+            return
+        }
+
+        lastMarkdownURL = try markdownLogStore.append(trimmedText, at: date)
+        finishTranscription(success: true)
+    }
+
     private func perform(_ output: RecordingSessionOutput) throws {
         switch output.action {
         case .startRecording(let mode):
@@ -67,5 +82,11 @@ public final class AppController {
         }
 
         assistantStateController.handle(event)
+    }
+
+    private static var defaultMarkdownDirectory: URL {
+        FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Documents", isDirectory: true)
+            .appendingPathComponent("SpeechNotes", isDirectory: true)
     }
 }

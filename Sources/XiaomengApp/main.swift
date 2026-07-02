@@ -23,7 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "状态：\(appController.assistantState.rawValue)", action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: recordingMenuTitle, action: #selector(toggleRecording), keyEquivalent: "r"))
-        menu.addItem(NSMenuItem(title: "打开今日日志（未接入）", action: nil, keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "打开最近日志", action: #selector(openLatestMarkdownLog), keyEquivalent: "o"))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "退出", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         return menu
@@ -46,6 +46,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         statusItem?.menu = makeMenu()
+    }
+
+    @objc private func openLatestMarkdownLog() {
+        guard let url = appController.lastMarkdownURL else {
+            NSSound.beep()
+            return
+        }
+
+        NSWorkspace.shared.open(url)
     }
 }
 

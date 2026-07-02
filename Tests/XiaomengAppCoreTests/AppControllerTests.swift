@@ -41,6 +41,57 @@ final class AppControllerTests: XCTestCase {
         XCTAssertEqual(controller.recordingState, .idle)
         XCTAssertEqual(controller.assistantState, .success)
     }
+
+    func testCompletedTranscriptionWritesMarkdownLog() throws {
+        let directory = try makeTemporaryDirectory()
+        let recorder = FakeAudioRecorder()
+        let controller = AppController(
+            audioRecorder: recorder,
+            markdownLogStore: MarkdownLogStore(directory: directory)
+        )
+        let date = try XCTUnwrap(makeDate(year: 2026, month: 7, day: 2, hour: 16, minute: 8))
+
+        try controller.completeTranscription(text: "你好 Xiaomeng", at: date)
+
+        let markdownURL = try XCTUnwrap(controller.lastMarkdownURL)
+        XCTAssertEqual(markdownURL.lastPathComponent, "2026-07-02.md")
+        let content = try String(contentsOf: markdownURL, encoding: .utf8)
+        XCTAssertEqual(content, "## 16:08\n\n你好 Xiaomeng\n\n")
+        XCTAssertEqual(controller.assistantState, .success)
+    }
+
+    func testEmptyTranscriptionDoesNotWriteMarkdownLog() throws {
+        let directory = try makeTemporaryDirectory()
+        let recorder = FakeAudioRecorder()
+        let controller = AppController(
+            audioRecorder: recorder,
+            markdownLogStore: MarkdownLogStore(directory: directory)
+        )
+
+        try controller.completeTranscription(text: "   ", at: Date())
+
+        XCTAssertNil(controller.lastMarkdownURL)
+        XCTAssertEqual(controller.assistantState, .error)
+    }
+
+    private func makeTemporaryDirectory() throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("xiaomeng-app-controller-tests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    private func makeDate(year: Int, month: Int, day: Int, hour: Int, minute: Int) -> Date? {
+        var components = DateComponents()
+        components.calendar = Calendar(identifier: .gregorian)
+        components.timeZone = TimeZone(secondsFromGMT: 0)
+        components.year = year
+        components.month = month
+        components.day = day
+        components.hour = hour
+        components.minute = minute
+        return components.date
+    }
 }
 
 @MainActor
