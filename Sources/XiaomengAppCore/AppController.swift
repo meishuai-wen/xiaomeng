@@ -55,12 +55,12 @@ public final class AppController {
     public func completeTranscription(text: String, at date: Date = Date()) throws {
         let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedText.isEmpty else {
-            finishTranscription(success: false)
+            completeTranscriptionState(success: false)
             return
         }
 
         lastMarkdownURL = try markdownLogStore.append(trimmedText, at: date)
-        finishTranscription(success: true)
+        completeTranscriptionState(success: true)
     }
 
     private func perform(_ output: RecordingSessionOutput) throws {
@@ -82,6 +82,13 @@ public final class AppController {
         }
 
         assistantStateController.handle(event)
+    }
+
+    private func completeTranscriptionState(success: Bool) {
+        let input: RecordingSessionInput = success ? .transcriptionFinished : .transcriptionFailed
+        let fallbackEvent: AssistantEvent = success ? .transcriptionSucceeded : .transcriptionEmpty
+        let output = recordingSessionController.handle(input)
+        applyAssistantEvent(output.assistantEvent ?? fallbackEvent)
     }
 
     public static var defaultMarkdownDirectory: URL {
