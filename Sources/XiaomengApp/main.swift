@@ -1,6 +1,7 @@
 import AppKit
 import XiaomengCore
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private let assistantStateController = AssistantStateController()
