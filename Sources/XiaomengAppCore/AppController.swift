@@ -84,7 +84,7 @@ public final class AppController {
         assistantStateController.handle(event)
     }
 
-    private static var defaultMarkdownDirectory: URL {
+    public static var defaultMarkdownDirectory: URL {
         FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Documents", isDirectory: true)
             .appendingPathComponent("SpeechNotes", isDirectory: true)
