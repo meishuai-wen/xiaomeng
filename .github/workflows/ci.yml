@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - phase-1-foundation
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  swift:
+    name: Swift 测试与构建
+    runs-on: macos-15
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 显示 Swift 版本
+        run: swift --version
+
+      - name: 运行测试
+        run: swift test
+
+      - name: 构建 App
+        run: swift build
