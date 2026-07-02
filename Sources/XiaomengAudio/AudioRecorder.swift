@@ -1,5 +1,6 @@
 import AVFoundation
 import Foundation
+import XiaomengCore
 
 public enum AudioRecorderError: Error, Equatable, Sendable {
     case alreadyRecording
