@@ -22,13 +22,12 @@ public struct ProcessCommandRunner: CommandRunning {
 
         let output = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
         let errorOutput = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-        let combinedOutput = [output, errorOutput].joined(separator: "\n")
 
         guard process.terminationStatus == 0 else {
+            let combinedOutput = [output, errorOutput].joined(separator: "\n")
             throw TranscriptionError.commandFailed(status: process.terminationStatus, output: combinedOutput)
         }
 
-        return combinedOutput
+        return output
     }
 }
-

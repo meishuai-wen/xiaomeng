@@ -41,7 +41,7 @@ swift build
 系统设置 → 隐私与安全性 → 辅助功能 → 添加并启用当前运行的小梦进程或终端
 ```
 
-如果是通过 `swift run XiaomengApp` 启动，通常需要给运行它的终端 App 授权。
+如果是通过 `swift run XiaomengApp` 启动，通常需要给运行它的终端 App 授权。如果是通过 `open Xiaomeng.app` 启动，需要给“小梦”授权。没有辅助功能权限时，小梦仍可能把文本放进剪贴板，但不能自动粘贴到钉钉、微信、浏览器等当前输入框。
 
 ## 配置 whisper.cpp
 

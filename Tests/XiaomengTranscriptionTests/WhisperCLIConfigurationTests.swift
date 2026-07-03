@@ -15,8 +15,8 @@ final class WhisperCLIConfigurationTests: XCTestCase {
             "-m", "/models/ggml-small.bin",
             "-f", "/tmp/input.wav",
             "-l", "auto",
-            "--no-timestamps"
+            "--no-timestamps",
+            "--no-prints"
         ])
     }
 }
-

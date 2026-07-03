@@ -20,8 +20,8 @@ public struct WhisperCLIConfiguration: Equatable, Sendable {
             "-m", modelURL.path,
             "-f", audioURL.path,
             "-l", language,
-            "--no-timestamps"
+            "--no-timestamps",
+            "--no-prints"
         ]
     }
 }
-
