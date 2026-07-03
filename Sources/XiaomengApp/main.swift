@@ -78,9 +78,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private static func makeTranscriberFromEnvironment() -> Transcribing? {
         let environment = ProcessInfo.processInfo.environment
+        let homeDirectory = FileManager.default.homeDirectoryForCurrentUser.path
+        let defaultExecutablePath = "/opt/homebrew/bin/whisper-cli"
+        let defaultModelPath = "\(homeDirectory)/Models/whisper/ggml-small.bin"
+
+        let executablePath = environment["XIAOMENG_WHISPER_CLI"] ?? defaultExecutablePath
+        let modelPath = environment["XIAOMENG_WHISPER_MODEL"] ?? defaultModelPath
+
         guard
-            let executablePath = environment["XIAOMENG_WHISPER_CLI"],
-            let modelPath = environment["XIAOMENG_WHISPER_MODEL"]
+            FileManager.default.isExecutableFile(atPath: executablePath),
+            FileManager.default.fileExists(atPath: modelPath)
         else {
             return nil
         }
