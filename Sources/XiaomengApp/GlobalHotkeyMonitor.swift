@@ -1,16 +1,16 @@
 import Carbon.HIToolbox
 import Foundation
 
-final class GlobalHotkeyMonitor {
+final class GlobalHotkeyMonitor: @unchecked Sendable {
     private enum HotkeyID {
         static let toggleRecording = UInt32(1)
     }
 
-    private let onToggleRecording: @MainActor () -> Void
+    private let onToggleRecording: @MainActor @Sendable () -> Void
     private var eventHandler: EventHandlerRef?
     private var toggleRecordingHotkey: EventHotKeyRef?
 
-    init(onToggleRecording: @escaping @MainActor () -> Void) {
+    init(onToggleRecording: @escaping @MainActor @Sendable () -> Void) {
         self.onToggleRecording = onToggleRecording
     }
 
@@ -33,7 +33,7 @@ final class GlobalHotkeyMonitor {
             &eventHandler
         )
 
-        var hotkeyID = EventHotKeyID(
+        let hotkeyID = EventHotKeyID(
             signature: GlobalHotkeyMonitor.fourCharacterCode("XMHK"),
             id: HotkeyID.toggleRecording
         )
