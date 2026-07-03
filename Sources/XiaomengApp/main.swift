@@ -54,7 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return "停止听写"
         }
 
-        switch appController.recordingState {
+        return switch appController.recordingState {
         case .idle, .transcribing:
             "开始听写"
         case .toggleRecording, .pushToTalkRecording:
