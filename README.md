@@ -7,7 +7,8 @@
 - 菜单栏常驻。
 - 点击菜单中的“开始录音”开始录制。
 - 再次点击“停止录音”结束录制。
-- 在任意 App 中按 `Command+Shift+Space` 可以开始或停止录音。
+- 在任意 App 中按 `Command+Shift+Space` 可以开始或停止流式听写。
+- 流式听写会持续识别声音，并把新增文字自动粘贴到当前光标所在输入框。
 - 如果配置了 whisper.cpp，会自动转写最近录音。
 - 转写成功后会复制文本并模拟 `Command+V`，把文字粘贴到当前光标所在输入框。
 - 转写结果写入每日 Markdown：
@@ -49,6 +50,7 @@ App 通过环境变量读取 whisper.cpp 命令行和模型路径：
 
 ```bash
 export XIAOMENG_WHISPER_CLI=/path/to/whisper-cli
+export XIAOMENG_WHISPER_STREAM=/path/to/whisper-stream
 export XIAOMENG_WHISPER_MODEL=/path/to/ggml-model.bin
 ```
 
@@ -56,6 +58,7 @@ export XIAOMENG_WHISPER_MODEL=/path/to/ggml-model.bin
 
 ```bash
 export XIAOMENG_WHISPER_CLI=/opt/homebrew/bin/whisper-cli
+export XIAOMENG_WHISPER_STREAM=/opt/homebrew/bin/whisper-stream
 export XIAOMENG_WHISPER_MODEL=/Users/mads/Models/whisper/ggml-small.bin
 ```
 
@@ -65,7 +68,7 @@ export XIAOMENG_WHISPER_MODEL=/Users/mads/Models/whisper/ggml-small.bin
 brew install whisper-cpp
 ```
 
-当前机器已经安装好 `/opt/homebrew/bin/whisper-cli`，并下载了 `small` 模型到 `/Users/mads/Models/whisper/ggml-small.bin`。模型文件建议使用 `small` 或 `medium` 起步，中文和英文混合输入的准确率会比 `base` 更稳。
+当前机器已经安装好 `/opt/homebrew/bin/whisper-cli` 和 `/opt/homebrew/bin/whisper-stream`，并下载了 `small` 模型到 `/Users/mads/Models/whisper/ggml-small.bin`。模型文件建议使用 `small` 或 `medium` 起步，中文和英文混合输入的准确率会比 `base` 更稳。
 
 ## 启动
 
@@ -93,7 +96,7 @@ ditto -x -k /tmp/xiaomeng-app/XiaomengApp-macos.zip /tmp/xiaomeng-app
 open /tmp/xiaomeng-app/Xiaomeng.app
 ```
 
-启动后，菜单栏会出现“小梦”。如果没有设置环境变量，App 会自动尝试使用 `/opt/homebrew/bin/whisper-cli` 和 `/Users/mads/Models/whisper/ggml-small.bin`。把光标放在任意输入框，按 `Command+Shift+Space` 开始录音，再按一次停止，转写结果会写入 Markdown 并自动粘贴。
+启动后，菜单栏会出现“小梦”。如果没有设置环境变量，App 会自动尝试使用 `/opt/homebrew/bin/whisper-stream`、`/opt/homebrew/bin/whisper-cli` 和 `/Users/mads/Models/whisper/ggml-small.bin`。把光标放在任意输入框，按 `Command+Shift+Space` 开始流式听写，再按一次停止。
 
 ## 已知限制
 
