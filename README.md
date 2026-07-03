@@ -69,14 +69,33 @@ brew install whisper-cpp
 
 ## 启动
 
-在当前功能分支工作区中运行：
+### 方式一：本机 SwiftPM 运行
+
+如果本机 SwiftPM 可用，在当前功能分支工作区中运行：
 
 ```bash
 cd /Users/mads/project/madsSecond/soud2text/.worktrees/phase-1-foundation
+export XIAOMENG_WHISPER_CLI=/opt/homebrew/bin/whisper-cli
+export XIAOMENG_WHISPER_MODEL=/Users/mads/Models/whisper/ggml-small.bin
 swift run XiaomengApp
 ```
 
 启动后，macOS 菜单栏会出现“小梦”。
+
+### 方式二：下载 CI 构建产物运行
+
+当前机器的 Command Line Tools 存在 SwiftPM manifest 链接问题时，可以直接下载 GitHub Actions 构建好的可执行文件：
+
+```bash
+mkdir -p /tmp/xiaomeng-app
+gh run download --repo meishuai-wen/xiaomeng --name XiaomengApp-macos --dir /tmp/xiaomeng-app
+chmod +x /tmp/xiaomeng-app/XiaomengApp
+export XIAOMENG_WHISPER_CLI=/opt/homebrew/bin/whisper-cli
+export XIAOMENG_WHISPER_MODEL=/Users/mads/Models/whisper/ggml-small.bin
+/tmp/xiaomeng-app/XiaomengApp
+```
+
+启动后，菜单栏会出现“小梦”。把光标放在任意输入框，按 `Command+Shift+Space` 开始录音，再按一次停止，转写结果会写入 Markdown 并自动粘贴。
 
 ## 已知限制
 
