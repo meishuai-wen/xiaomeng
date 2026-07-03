@@ -7,6 +7,7 @@ import XiaomengTranscription
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
+    private var hotkeyMonitor: GlobalHotkeyMonitor?
     private let appController = AppController(
         audioRecorder: AudioRecorder(),
         transcriber: AppDelegate.makeTranscriberFromEnvironment(),
@@ -15,6 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         configureMenuBar()
+        configureGlobalHotkey()
     }
 
     private func configureMenuBar() {
@@ -24,9 +26,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = item
     }
 
+    private func configureGlobalHotkey() {
+        let monitor = GlobalHotkeyMonitor { [weak self] in
+            self?.toggleRecording()
+        }
+        monitor.start()
+        hotkeyMonitor = monitor
+    }
+
     private func makeMenu() -> NSMenu {
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "状态：\(appController.assistantState.rawValue)", action: nil, keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "快捷键：\(GlobalHotkey.toggleRecording.displayName)", action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: recordingMenuTitle, action: #selector(toggleRecording), keyEquivalent: "r"))
         menu.addItem(NSMenuItem(title: "打开最近日志", action: #selector(openLatestMarkdownLog), keyEquivalent: "o"))
         menu.addItem(NSMenuItem.separator())
