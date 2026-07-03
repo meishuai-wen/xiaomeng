@@ -61,6 +61,22 @@ final class AppControllerTests: XCTestCase {
         XCTAssertEqual(controller.assistantState, .success)
     }
 
+    func testCompletedTranscriptionOutputsTrimmedText() throws {
+        let directory = try makeTemporaryDirectory()
+        let recorder = FakeAudioRecorder()
+        let textOutput = FakeTextOutput()
+        let controller = AppController(
+            audioRecorder: recorder,
+            textOutput: textOutput,
+            markdownLogStore: MarkdownLogStore(directory: directory)
+        )
+
+        try controller.completeTranscription(text: "  你好 Xiaomeng  ", at: Date())
+
+        XCTAssertEqual(textOutput.outputTexts, ["你好 Xiaomeng"])
+        XCTAssertEqual(controller.assistantState, .success)
+    }
+
     func testEmptyTranscriptionDoesNotWriteMarkdownLog() throws {
         let directory = try makeTemporaryDirectory()
         let recorder = FakeAudioRecorder()
@@ -72,6 +88,22 @@ final class AppControllerTests: XCTestCase {
         try controller.completeTranscription(text: "   ", at: Date())
 
         XCTAssertNil(controller.lastMarkdownURL)
+        XCTAssertEqual(controller.assistantState, .error)
+    }
+
+    func testEmptyTranscriptionDoesNotOutputText() throws {
+        let directory = try makeTemporaryDirectory()
+        let recorder = FakeAudioRecorder()
+        let textOutput = FakeTextOutput()
+        let controller = AppController(
+            audioRecorder: recorder,
+            textOutput: textOutput,
+            markdownLogStore: MarkdownLogStore(directory: directory)
+        )
+
+        try controller.completeTranscription(text: "   ", at: Date())
+
+        XCTAssertTrue(textOutput.outputTexts.isEmpty)
         XCTAssertEqual(controller.assistantState, .error)
     }
 
@@ -146,5 +178,13 @@ private final class FakeTranscriber: Transcribing {
     func transcribe(audioURL: URL) throws -> String {
         lastAudioURL = audioURL
         return text
+    }
+}
+
+private final class FakeTextOutput: TextOutputting {
+    private(set) var outputTexts: [String] = []
+
+    func output(_ text: String) throws {
+        outputTexts.append(text)
     }
 }

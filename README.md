@@ -8,6 +8,7 @@
 - 点击菜单中的“开始录音”开始录制。
 - 再次点击“停止录音”结束录制。
 - 如果配置了 whisper.cpp，会自动转写最近录音。
+- 转写成功后会复制文本并模拟 `Command+V`，把文字粘贴到当前光标所在输入框。
 - 转写结果写入每日 Markdown：
 
 ```text
@@ -31,6 +32,16 @@ swift test
 swift build
 ```
 
+## macOS 权限
+
+首次使用需要允许麦克风权限。自动粘贴还需要开启辅助功能权限：
+
+```text
+系统设置 → 隐私与安全性 → 辅助功能 → 添加并启用当前运行的小梦进程或终端
+```
+
+如果是通过 `swift run XiaomengApp` 启动，通常需要给运行它的终端 App 授权。
+
 ## 配置 whisper.cpp
 
 App 通过环境变量读取 whisper.cpp 命令行和模型路径：
@@ -44,8 +55,16 @@ export XIAOMENG_WHISPER_MODEL=/path/to/ggml-model.bin
 
 ```bash
 export XIAOMENG_WHISPER_CLI=/opt/homebrew/bin/whisper-cli
-export XIAOMENG_WHISPER_MODEL=$HOME/Models/whisper/ggml-small.bin
+export XIAOMENG_WHISPER_MODEL=/Users/mads/Models/whisper/ggml-small.bin
 ```
+
+如果本机还没有安装 whisper.cpp，可以先用 Homebrew 安装：
+
+```bash
+brew install whisper-cpp
+```
+
+当前机器已经安装好 `/opt/homebrew/bin/whisper-cli`，并下载了 `small` 模型到 `/Users/mads/Models/whisper/ggml-small.bin`。模型文件建议使用 `small` 或 `medium` 起步，中文和英文混合输入的准确率会比 `base` 更稳。
 
 ## 启动
 
@@ -63,6 +82,4 @@ swift run XiaomengApp
 - 还没有正式 `.app` 打包。
 - 还没有全局快捷键。
 - 还没有 Live2D 悬浮助手。
-- 还没有自动粘贴到当前输入框。
 - whisper.cpp 和模型路径暂时通过环境变量配置。
-

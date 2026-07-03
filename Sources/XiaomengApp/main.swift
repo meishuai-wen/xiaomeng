@@ -9,7 +9,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private let appController = AppController(
         audioRecorder: AudioRecorder(),
-        transcriber: AppDelegate.makeTranscriberFromEnvironment()
+        transcriber: AppDelegate.makeTranscriberFromEnvironment(),
+        textOutput: PasteboardTextOutput()
     )
 
     func applicationDidFinishLaunching(_ notification: Notification) {

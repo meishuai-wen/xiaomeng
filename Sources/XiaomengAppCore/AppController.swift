@@ -10,6 +10,7 @@ public final class AppController {
     private let assistantStateController: AssistantStateController
     private let transcriber: Transcribing?
     private let markdownLogStore: MarkdownLogStore
+    private let textOutput: TextOutputting
 
     public private(set) var lastRecordingURL: URL?
     public private(set) var lastMarkdownURL: URL?
@@ -17,12 +18,14 @@ public final class AppController {
     public init(
         audioRecorder: AudioRecording,
         transcriber: Transcribing? = nil,
+        textOutput: TextOutputting = NoOpTextOutput(),
         recordingSessionController: RecordingSessionController = RecordingSessionController(),
         assistantStateController: AssistantStateController = AssistantStateController(initialState: .idle),
         markdownLogStore: MarkdownLogStore = MarkdownLogStore(directory: AppController.defaultMarkdownDirectory)
     ) {
         self.audioRecorder = audioRecorder
         self.transcriber = transcriber
+        self.textOutput = textOutput
         self.recordingSessionController = recordingSessionController
         self.assistantStateController = assistantStateController
         self.markdownLogStore = markdownLogStore
@@ -64,6 +67,7 @@ public final class AppController {
         }
 
         lastMarkdownURL = try markdownLogStore.append(trimmedText, at: date)
+        try textOutput.output(trimmedText)
         completeTranscriptionState(success: true)
     }
 
