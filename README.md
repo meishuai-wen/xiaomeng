@@ -89,6 +89,7 @@ swift run XiaomengApp
 ```bash
 mkdir -p /tmp/xiaomeng-app
 gh run download --repo meishuai-wen/xiaomeng --name XiaomengApp-macos --dir /tmp/xiaomeng-app
+ditto -x -k /tmp/xiaomeng-app/XiaomengApp-macos.zip /tmp/xiaomeng-app
 open /tmp/xiaomeng-app/Xiaomeng.app
 ```
 

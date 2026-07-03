@@ -59,9 +59,10 @@ jobs:
           </dict>
           </plist>
           PLIST
+          ditto -c -k --keepParent dist/Xiaomeng.app dist/XiaomengApp-macos.zip
 
       - name: 上传 macOS App
         uses: actions/upload-artifact@v4
         with:
           name: XiaomengApp-macos
-          path: dist/Xiaomeng.app
+          path: dist/XiaomengApp-macos.zip
