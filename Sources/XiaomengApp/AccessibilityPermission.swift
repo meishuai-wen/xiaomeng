@@ -4,7 +4,7 @@ import Foundation
 enum AccessibilityPermission {
     static func requestIfNeeded() {
         let options = [
-            kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true
+            "AXTrustedCheckOptionPrompt": true
         ] as CFDictionary
 
         AXIsProcessTrustedWithOptions(options)
